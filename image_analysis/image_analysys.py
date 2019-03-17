@@ -109,6 +109,32 @@ def check_screen_for_teleport(frame):
     globals_vars.ENEMY_TELEPORTING = pixels > 50
 
 
+def check_screen_for_subzero_stun(full_image):
+    size_y = len(full_image)
+
+    subzero_frame = full_image[range(int(0.25 * size_y), int(0.9 * size_y))]
+
+    frame = cv2.cvtColor(subzero_frame, cv2.COLOR_BGR2HSV)
+    # BGR FOR SUBZERO COLORS
+    bgr = [187, 220, 255]
+    hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
+
+    minHSV = np.array([hsv[0] - 40, hsv[1] - 75, hsv[2] - 140])
+    maxHSV = np.array([hsv[0] + 15, hsv[1] + 90, hsv[2] + 100])
+    maskHSV = cv2.inRange(frame, minHSV, maxHSV)
+
+    # cv2.imshow("subzero", maskHSV)
+    # k = cv2.waitKey(0)
+
+    count = np.count_nonzero(maskHSV)
+
+    # spear_denoisified = cv2.fastNlMeansDenoising(maskHSV, searchWindowSize=13, h=31)
+    # cv2.imshow("spear", spear_denoisified)
+    # k = cv2.waitKey(0)
+
+    globals_vars.ENEMY_SUBZERO_STUN = count > 800
+
+
 def check_screen_for_spear(full_image):
     size_y = len(full_image)
 
@@ -197,9 +223,12 @@ def process_image(image):
     size_x = len(image[0])
     image_for_tp_check = image[range(int(0.55 * size_y), int(0.88 * size_y)), :]
     hsv_tp_check = cv2.cvtColor(image_for_tp_check, cv2.COLOR_BGR2HSV)
-    check_screen_for_teleport(hsv_tp_check)
 
-    # check_screen_for_spear(image)
+    if globals_vars.OPPONENT == 'SCORPION':
+        check_screen_for_teleport(hsv_tp_check)
+        # check_screen_for_spear(image)
+    else:
+        check_screen_for_subzero_stun(image)
 
     process_results = {}
 

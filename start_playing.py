@@ -29,37 +29,76 @@ while True:
         break
 
 print(globals_vars.OPPONENT)
-while True:
-    if globals_vars.ENEMY_TELEPORTING:
-        combo.press_move(combo.MOVE_R2_BLOCK, 0.3, 0.1, sio)
-        scorpion.combo_1(combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE), sio)
-        globals_vars.CURRENT_FACING_SIDE = combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE)
-        print('Detected enemy teleported, blocked and parried him ...')
-    elif globals_vars.NUMBER_OF_FRAMES_SINCE_LAST_FACING_SIDE_CHECK >= 60:
-        print('Trying to detect side I\'m on by ducking ...')
-        facing_side = strategies.player_facing_side.get_facing_side_by_ducking(sio)
 
-        if facing_side is None:
-            print('Could not determine side I\'m facing, will go into safe move' +
-                  'and try to determine facing side again ...')
-            scorpion.forward_2(globals_vars.CURRENT_FACING_SIDE, sio)
-        else:
-            print('Detected I\'m on facing the ' + str(facing_side) + ' side!')
-            globals_vars.CURRENT_FACING_SIDE = facing_side
-            scorpion.takedown(facing_side, sio)
-            globals_vars.NUMBER_OF_FRAMES_SINCE_LAST_FACING_SIDE_CHECK = 0
-    else:
-        distance = abs(globals_vars.LEFT_PLAYER_X - globals_vars.RIGHT_PLAYER_X)
-        if distance <= 100:
-            print('CLOSE RANGE')
+if globals_vars.OPPONENT == 'SCORPION':
+    while True:
+        if globals_vars.ENEMY_TELEPORTING:
+            combo.press_move(combo.MOVE_R2_BLOCK, 0.3, 0.1, sio)
+            globals_vars.CURRENT_FACING_SIDE = combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE)
             scorpion.combo_1(globals_vars.CURRENT_FACING_SIDE, sio)
-        elif distance <= 200:
-            print('MID RANGE')
-            if np.random.random_sample() < distance / 100:
-                scorpion.teleport(globals_vars.CURRENT_FACING_SIDE, sio)
-                globals_vars.CURRENT_FACING_SIDE = combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE)
+            print('Detected enemy teleported, blocked and parried him ...')
+        elif globals_vars.NUMBER_OF_FRAMES_SINCE_LAST_FACING_SIDE_CHECK >= 60:
+            print('Trying to detect side I\'m on by ducking ...')
+            facing_side = strategies.player_facing_side.get_facing_side_by_ducking(sio)
+
+            if facing_side is None:
+                print('Could not determine side I\'m facing, will go into safe move' +
+                      'and try to determine facing side again ...')
+                scorpion.forward_2(globals_vars.CURRENT_FACING_SIDE, sio)
             else:
-                scorpion.takedown(globals_vars.CURRENT_FACING_SIDE, sio)
+                print('Detected I\'m on facing the ' + str(facing_side) + ' side!')
+                globals_vars.CURRENT_FACING_SIDE = facing_side
+                scorpion.takedown(facing_side, sio)
+                globals_vars.NUMBER_OF_FRAMES_SINCE_LAST_FACING_SIDE_CHECK = 0
         else:
-            print('LONG RANGE')
-            scorpion.spear(globals_vars.CURRENT_FACING_SIDE, sio)
+            distance = abs(globals_vars.LEFT_PLAYER_X - globals_vars.RIGHT_PLAYER_X)
+            if distance <= 100:
+                print('CLOSE RANGE')
+                scorpion.combo_1(globals_vars.CURRENT_FACING_SIDE, sio)
+            elif distance <= 200:
+                print('MID RANGE')
+                if np.random.random_sample() < distance / 100:
+                    scorpion.teleport(globals_vars.CURRENT_FACING_SIDE, sio)
+                    globals_vars.CURRENT_FACING_SIDE = combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE)
+                else:
+                    scorpion.takedown(globals_vars.CURRENT_FACING_SIDE, sio)
+            else:
+                print('LONG RANGE')
+                scorpion.spear(globals_vars.CURRENT_FACING_SIDE, sio)
+else:
+    while True:
+        if globals_vars.ENEMY_SUBZERO_STUN:
+            scorpion.teleport(globals_vars.CURRENT_FACING_SIDE, sio)
+            globals_vars.CURRENT_FACING_SIDE = combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE)
+            scorpion.combo_1(globals_vars.CURRENT_FACING_SIDE, sio)
+            print('Detected enemy ice stun, blocked and parried him ...')
+        elif globals_vars.NUMBER_OF_FRAMES_SINCE_LAST_FACING_SIDE_CHECK >= 60:
+            print('Trying to detect side I\'m on by ducking ...')
+            facing_side = strategies.player_facing_side.get_facing_side_by_ducking(sio)
+
+            if facing_side is None:
+                print('Could not determine side I\'m facing, will go into safe move' +
+                      'and try to determine facing side again ...')
+                scorpion.forward_2(globals_vars.CURRENT_FACING_SIDE, sio)
+            else:
+                print('Detected I\'m on facing the ' + str(facing_side) + ' side!')
+                globals_vars.CURRENT_FACING_SIDE = facing_side
+                scorpion.takedown(facing_side, sio)
+                globals_vars.NUMBER_OF_FRAMES_SINCE_LAST_FACING_SIDE_CHECK = 0
+        else:
+            distance = abs(globals_vars.LEFT_PLAYER_X - globals_vars.RIGHT_PLAYER_X)
+            if distance <= 50:
+                combo.press_move(combo.MOVE_L1_THROW, 0.2, 0.2, sio)
+            if distance <= 100:
+                print('CLOSE RANGE')
+                scorpion.combo_1(globals_vars.CURRENT_FACING_SIDE, sio)
+            elif distance <= 200:
+                print('MID RANGE')
+                if np.random.random_sample() < distance / 100:
+                    scorpion.teleport(globals_vars.CURRENT_FACING_SIDE, sio)
+                    globals_vars.CURRENT_FACING_SIDE = combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE)
+                else:
+                    scorpion.takedown(globals_vars.CURRENT_FACING_SIDE, sio)
+            else:
+                print('LONG RANGE')
+                scorpion.spear(globals_vars.CURRENT_FACING_SIDE, sio)

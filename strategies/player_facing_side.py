@@ -30,7 +30,7 @@ def get_facing_side_by_jumping(sio):
 
 def get_facing_side_by_ducking(sio):
     number_of_tries = 0
-    max_number_of_tries = 300
+    max_number_of_tries = 500
 
     combo.emit(combo.MOVE_DOWN, True, sio)
     sleep(0.1)

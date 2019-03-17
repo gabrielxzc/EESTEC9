@@ -12,8 +12,4 @@ def update_environment_parameters(frame):
     globals_vars.RIGHT_PLAYER_X = info['right_pl_x']
     globals_vars.RIGHT_PLAYER_Y = info['right_pl_y']
     globals_vars.LAST_FRAME = info['frame']
-
-    cv2.imshow('client', info['frame'])
-    cv2.waitKey(1)
-
     globals_vars.NUMBER_OF_FRAMES_SINCE_LAST_FACING_SIDE_CHECK += 1
