@@ -96,20 +96,6 @@ def check_players_down(kcc, width):
     return check_player_down(kcc[0], width), check_player_down(kcc[1], width)
 
 
-def check_screen_for_spear(frame):
-    # BGR FOR YELLOW
-    bgr = [82, 199, 235]
-    hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
-
-    # minHSV = np.array([hsv[0] - 10, hsv[1] - 60, hsv[2] - 220])
-    # maxHSV = np.array([hsv[0] + 8, hsv[1] + 60, hsv[2] + 220])
-    minHSV = np.array([hsv[0] - 80, hsv[1] - 35, hsv[2] - 220])
-    maxHSV = np.array([hsv[0] + 80, hsv[1] + 35, hsv[2] + 220])
-    maskHSV = cv2.inRange(frame, minHSV, maxHSV)
-
-    return maskHSV
-
-
 def check_screen_for_teleport(frame):
     # BGR FOR CYAN
     bgr = [245, 246, 161]
@@ -121,6 +107,36 @@ def check_screen_for_teleport(frame):
 
     pixels = np.count_nonzero(maskHSV)
     globals_vars.ENEMY_TELEPORTING = pixels > 50
+
+
+def check_screen_for_spear(full_image):
+    size_y = len(full_image)
+
+    spear_frame = full_image[range(int(0.597 * size_y), int(0.67 * size_y)), :]
+
+    frame = cv2.cvtColor(spear_frame, cv2.COLOR_BGR2HSV)
+    # BGR FOR YELLOW
+    bgr = [144, 133, 129]
+    hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
+
+    minHSV = np.array([hsv[0] - 15, hsv[1] - 10, hsv[2] - 97])
+    maxHSV = np.array([hsv[0] + 15, hsv[1] + 20, hsv[2] + 100])
+    maskHSV = cv2.inRange(frame, minHSV, maxHSV)
+
+    # cv2.imshow("spear", maskHSV)
+    # k = cv2.waitKey(0)
+    #
+    # print("spear count:", np.count_nonzero(maskHSV))
+
+    spear_denoisified = cv2.fastNlMeansDenoising(maskHSV, searchWindowSize=13, h=59)
+    # cv2.imshow("spear", spear_denoisified)
+    # k = cv2.waitKey(0)
+
+    print("spear count:", np.count_nonzero(spear_denoisified))
+    globals_vars.ENEMY_SPEAR = np.count_nonzero(spear_denoisified) > 5000
+
+
+    # spear = check_screen_for_spear(processed_image)
 
 
 def get_players_centroids(processed_image, initial_width, initial_height):
@@ -177,6 +193,8 @@ def process_image(image):
     hsv_tp_check = cv2.cvtColor(image_for_tp_check, cv2.COLOR_BGR2HSV)
     check_screen_for_teleport(hsv_tp_check)
 
+    check_screen_for_spear(image)
+
     process_results = {}
 
     health_bars = image[range(int(0.18 * size_y), int(0.20 * size_y)), :]
@@ -200,8 +218,6 @@ def process_image(image):
     particular_image = image[range(int(0.25 * size_y), int(0.8 * size_y)), :]
 
     processed_image = cv2.cvtColor(particular_image, cv2.COLOR_BGR2HSV)
-
-    spear = check_screen_for_spear(processed_image)
 
     kcc = get_players_centroids(processed_image, len(image), len(image[0]))
 
