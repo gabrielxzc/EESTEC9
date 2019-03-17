@@ -93,6 +93,30 @@ def check_player_down(centroid, width):
 def check_players_down(kcc, width):
     return check_player_down(kcc[0], width), check_player_down(kcc[1], width)
 
+def check_screen_for_spear(frame):
+    # BGR FOR YELLOW
+    bgr = [82, 199, 235]
+    hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
+
+    # minHSV = np.array([hsv[0] - 10, hsv[1] - 60, hsv[2] - 220])
+    # maxHSV = np.array([hsv[0] + 8, hsv[1] + 60, hsv[2] + 220])
+    minHSV = np.array([hsv[0] - 80, hsv[1] - 35, hsv[2] - 220])
+    maxHSV = np.array([hsv[0] + 80, hsv[1] + 35, hsv[2] + 220])
+    maskHSV = cv2.inRange(frame, minHSV, maxHSV)
+
+    return maskHSV
+
+def check_screen_for_teleport(frame):
+    # BGR FOR CYAN
+    bgr = [245, 246, 161]
+    hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
+
+    minHSV = np.array([hsv[0] - 10, hsv[1] - 10, hsv[2] - 180])
+    maxHSV = np.array([hsv[0] + 10, hsv[1] + 60, hsv[2] + 220])
+    maskHSV = cv2.inRange(frame, minHSV, maxHSV)
+
+    pixels = np.count_nonzero(maskHSV)
+    return pixels > 200
 
 def get_players_centroids(processed_image, initial_width, initial_height):
     merged_players_image = np.bitwise_or(get_blued_image(processed_image), get_yellowed_image(processed_image))
@@ -171,6 +195,8 @@ def process_image(image):
 
     processed_image = cv2.cvtColor(particular_image, cv2.COLOR_BGR2HSV)
 
+    spear = check_screen_for_spear(processed_image)
+
     kcc, teleported = get_players_centroids(processed_image, len(image), len(image[0]))
 
     players = [(kcc[0][0] + 0.25 * size_y, kcc[0][1]), (kcc[1][0] + 0.25 * size_y, kcc[1][1])]
@@ -198,14 +224,18 @@ def process_image(image):
 
     return process_results
 
+
 # full_image = cv2.imread('frame-scorpion-down.png')
 # full_image = cv2.imread(
-#     '/Users/alexmititelu/Documents/Work/HackathonEESTEC_REPO/EESTEC9/frames/frame-lower-hp-players.png')
+#     '/Users/alexmititelu/Documents/Work/HackathonEESTEC_REPO/EESTEC9/frames/teleport-frame4.png')
 # full_image = cv2.imread('frame1.png')
 # full_image = cv2.imread('frame0.png')
 #
-# test_image = full_image[:,:]
-# cv2.imshow("final", test_image)
+# frame =cv2.cvtColor(full_image, cv2.COLOR_BGR2HSV)
+# # spear = check_screen_for_spear(frame)
+# tp = check_screen_for_teleport(frame)
+# print(tp)
+# cv2.imshow("teleport", tp)
 # k = cv2.waitKey(0)
 #
 #
