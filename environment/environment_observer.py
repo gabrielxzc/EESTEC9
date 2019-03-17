@@ -29,8 +29,8 @@ def render_frame(callback):
     global compression_ratio
     frame = np.concatenate(frame_fragments)
 
-    resized = cv2.resize(frame, (0, 0), fx=1 / compression_ratio, fy=1 / compression_ratio)
-    callback(resized)
+    # resized = cv2.resize(frame, (0, 0), fx=1 / compression_ratio, fy=1 / compression_ratio)
+    callback(frame)
 
     init_frame_fragments()
 
