@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import sklearn.cluster as sk
 import random
+import globals_vars
 
 previous = None
 prev_centroid_left = None
@@ -75,6 +76,7 @@ def draw_player(frame, players):
 
     return frame
 
+
 #
 # def check_teleport(actual):
 #     global previous
@@ -93,6 +95,7 @@ def check_player_down(centroid, width):
 def check_players_down(kcc, width):
     return check_player_down(kcc[0], width), check_player_down(kcc[1], width)
 
+
 def check_screen_for_spear(frame):
     # BGR FOR YELLOW
     bgr = [82, 199, 235]
@@ -106,6 +109,7 @@ def check_screen_for_spear(frame):
 
     return maskHSV
 
+
 def check_screen_for_teleport(frame):
     # BGR FOR CYAN
     bgr = [245, 246, 161]
@@ -116,7 +120,8 @@ def check_screen_for_teleport(frame):
     maskHSV = cv2.inRange(frame, minHSV, maxHSV)
 
     pixels = np.count_nonzero(maskHSV)
-    return pixels > 200
+    globals_vars.ENEMY_TELEPORTING = pixels > 50
+
 
 def get_players_centroids(processed_image, initial_width, initial_height):
     merged_players_image = np.bitwise_or(get_blued_image(processed_image), get_yellowed_image(processed_image))
@@ -162,14 +167,17 @@ def get_players_centroids(processed_image, initial_width, initial_height):
     # cv2.imshow("merged", merged_players_image)
     # k = cv2.waitKey(0)
 
-    return
+    return kcc
 
 
 def process_image(image):
-    process_results = {}
-
     size_y = len(image)
     size_x = len(image[0])
+    image_for_tp_check = image[range(int(0.55 * size_y), int(0.88 * size_y)), :]
+    hsv_tp_check = cv2.cvtColor(image_for_tp_check, cv2.COLOR_BGR2HSV)
+    check_screen_for_teleport(hsv_tp_check)
+
+    process_results = {}
 
     health_bars = image[range(int(0.18 * size_y), int(0.20 * size_y)), :]
 
@@ -202,7 +210,7 @@ def process_image(image):
     after_draw = draw_player(image, players)
 
     process_results["frame"] = after_draw
-    process_results["enemy_teleported"] = check_screen_for_teleport(image)
+    # process_results["enemy_teleported"] = check_screen_for_teleport(processed_image)
 
     if kcc[0][1] < kcc[1][1]:
         left_x, left_y = kcc[0][1], kcc[0][0]
@@ -221,7 +229,6 @@ def process_image(image):
     process_results["p2_health"] = p2_health
 
     return process_results
-
 
 # full_image = cv2.imread('frame-scorpion-down.png')
 # full_image = cv2.imread(

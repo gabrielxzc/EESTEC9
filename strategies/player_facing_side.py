@@ -30,17 +30,19 @@ def get_facing_side_by_jumping(sio):
 
 def get_facing_side_by_ducking(sio):
     number_of_tries = 0
-    max_number_of_tries = 100
+    max_number_of_tries = 300
 
     combo.emit(combo.MOVE_DOWN, True, sio)
     sleep(0.1)
 
     combo.emit(combo.MOVE_R2_BLOCK, True, sio)
-    sleep(0.1)
+    sleep(0.5)
 
     while True:
         if number_of_tries > max_number_of_tries:
-            return None
+            facing_side = None
+            break
+
         number_of_tries += 1
 
         if globals_vars.LEFT_PLAYER_Y / len(globals_vars.LAST_FRAME) > 0.4 and \

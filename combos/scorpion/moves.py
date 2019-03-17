@@ -19,9 +19,9 @@ def backward_3(direction_facing, sio):  # LOW
     combo.press_double_move(combo.get_opposite_direction(direction_facing), 0.1, combo.MOVE_3, 0.1, 0.1, 0.4, sio)
 
 
-def teleport(direction_not_facing, sio):
+def teleport(direction_facing, sio):
     combo.press_move(combo.MOVE_DOWN, 0.05, 0.05, sio)
-    combo.press_double_move(direction_not_facing, 0.1, combo.MOVE_3, 0.1, 0.1, 0.5, sio)
+    combo.press_double_move(combo.get_opposite_direction(direction_facing), 0.1, combo.MOVE_3, 0.1, 0.1, 0.5, sio)
 
 
 def spear(direction_facing, sio):
@@ -45,6 +45,6 @@ def combo_1(facing_direction, sio):  # CLOSE-MID RANGE
 if __name__ == '__main__':
     sio = socketio.Client()
     sio.connect('http://10.81.176.102')
-    combo_1(combo.MOVE_RIGHT, sio)
+    teleport(combo.MOVE_RIGHT, sio)
     sleep(1)
     sio.disconnect()
