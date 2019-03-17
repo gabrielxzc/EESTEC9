@@ -5,36 +5,39 @@ import sklearn.cluster as sk
 
 previous = None
 
-
 def get_player_health(player_healthbar):
     return np.count_nonzero(player_healthbar)
-
 
 def get_yellowed_image(frame):
     # BGR FOR YELLOW
     bgr = [82, 199, 235]
     hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
 
-    minHSV = np.array([hsv[0] - 10, hsv[1] - 60, hsv[2] - 220])
-    maxHSV = np.array([hsv[0] + 8, hsv[1] + 60, hsv[2] + 220])
+    # minHSV = np.array([hsv[0] - 10, hsv[1] - 60, hsv[2] - 220])
+    # maxHSV = np.array([hsv[0] + 8, hsv[1] + 60, hsv[2] + 220])
+    minHSV = np.array([hsv[0] - 80, hsv[1] - 35, hsv[2] - 220])
+    maxHSV = np.array([hsv[0] + 80, hsv[1] + 35, hsv[2] + 220])
     maskHSV = cv2.inRange(frame, minHSV, maxHSV)
 
     return maskHSV
 
 
 def get_blued_image(frame):
-    lower_blue = np.array([70, 50, 50])
-    upper_blue = np.array([120, 255, 255])
-    mask = cv2.inRange(frame, lower_blue, upper_blue)
-    return mask
+    bgr = [154, 104, 75]
+    hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
 
+    minHSV = np.array([hsv[0] - 20, hsv[1] - 60, hsv[2] - 60])
+    maxHSV = np.array([hsv[0] + 20, hsv[1] + 60, hsv[2] + 50])
+    maskHSV = cv2.inRange(frame, minHSV, maxHSV)
+
+    return maskHSV
 
 def draw_player(frame, players):
     for idx in (0, 1):
 
         size_y = len(frame)
 
-        x = int(players[idx][0] + 0.25 * size_y)
+        x = int(players[idx][0]+ 0.25 * size_y)
         y = int(players[idx][1])
 
         for _x in range(x - 20, x + 20):
@@ -45,7 +48,6 @@ def draw_player(frame, players):
 
     return frame
 
-
 def check_teleport(actual):
     global previous
     if previous is None:
@@ -55,23 +57,39 @@ def check_teleport(actual):
     previous = actual
     return rez
 
-
-# merged_players_image = cv2.bitwise_or(get_blued_image(processed_image), get_yellowed_image(processed_image))
 def get_players_centroids(processed_image):
     merged_players_image = np.bitwise_or(get_blued_image(processed_image), get_yellowed_image(processed_image))
-    merged_players_image = cv2.fastNlMeansDenoising(merged_players_image, searchWindowSize=13, h=79)
+    # merged_players_image = cv2.fastNlMeansDenoising(merged_players_image,searchWindowSize=13, h=79)
 
+    # cv2.imshow("merged", merged_players_image)
+    # k = cv2.waitKey(0)
     x = np.where(merged_players_image != 0)
     xy_coo = np.array([x[0], x[1]]).T
 
     teleported = check_teleport(len(xy_coo))
 
-    k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=2).fit(xy_coo)
+    k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=5,n_init=1,init=np.array([0,250,600,250]).reshape(2,2)).fit(xy_coo)
     kcc = k_means.cluster_centers_
-    return (kcc, teleported)
+    print(kcc)
+
+    # xy_coo_2 = np.fromfunction(lambda i: xy_coo[i] if min(np.linalg.norm(xy_coo[i]-kcc[0]), np.linalg.norm(xy_coo[i]-kcc[1])) > 20 else None,\
+    #                            (len(xy_coo), ), dtype=int)
+    # xy_coo_2 = xy_coo_2[xy_coo_2 is not None]
+
+    xy_coo_2 = [xy_coo[i] for i in range(len(xy_coo)) if
+                min(np.linalg.norm(xy_coo[i] - kcc[0]), np.linalg.norm(xy_coo[i] - kcc[1])) < 30]
+    k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=5).fit(xy_coo_2)
+    kcc = k_means.cluster_centers_
+    print(kcc)
+
+    # cv2.imshow("merged", merged_players_image)
+    # k = cv2.waitKey(0)
+
+    return (kcc,teleported)
 
 
 def process_image(image):
+
     process_results = {}
 
     size_y = len(image)
@@ -81,9 +99,13 @@ def process_image(image):
     processed_health_bar = cv2.cvtColor(health_bar, cv2.COLOR_BGR2GRAY)
     #
     #
-    p1_healthbar = health_bar[:, range(0, int(size_x / 2) - 6)]
-    p2_healthbar = health_bar[:, range(int(size_x / 2) + 6, size_x)]
-    #
+    p1_healthbar = processed_health_bar[:, range(0, int(size_x / 2) - 6)]
+    p2_healthbar = processed_health_bar[:, range(int(size_x / 2) + 6, size_x)]
+
+
+    # cv2.imwrite("hbar.png",p1_healthbar)
+    # cv2.imwrite("hbar2.png", p1_healthbar)
+    # #
     # print("P1 health: ", get_player_health(p1_healthbar))
     # print("P2 health: ", get_player_health(p2_healthbar))
 
@@ -91,11 +113,7 @@ def process_image(image):
 
     processed_image = cv2.cvtColor(particular_image, cv2.COLOR_BGR2HSV)
 
-    kcc, teleported = get_players_centroids(processed_image)
-    # print(kcc)
-    # print("Colors for left player:",full_image[int(kcc[0][0] + 0.25*size_y),int(kcc[0][1])])
-    #
-    # print("Colors for right player:",full_image[int(kcc[1][0]+0.25*size_y),int(kcc[1][1])])
+    kcc,teleported = get_players_centroids(processed_image)
 
     players = [(kcc[0][0], kcc[0][1]), (kcc[1][0], kcc[1][1])]
 
@@ -115,24 +133,13 @@ def process_image(image):
 
     return process_results
 
-# full_image = cv2.imread('subz_subz.png')
+# full_image = cv2.imread('frame-scorpion-down.png')
+# full_image = cv2.imread('/Users/alexmititelu/Documents/Work/HackathonEESTEC_REPO/EESTEC9/frames/frame-lower-hp-players.png')
+# full_image = cv2.imread('frame1.png')
+# full_image = cv2.imread('frame0.png')
+#
 # start = time.time()
 # process_result = process_image(full_image)
 # print(time.time() - start)
 # cv2.imshow("final", process_result["frame"])
 # k = cv2.waitKey(0)
-#
-# cv2.destroyAllWindows()
-
-#
-# for window_size in range(1, 22, 2):
-#     print("Try number %d" % window_size)
-#     total_time = 0
-#     total_tries = 0
-#     for i in range(0, 20):
-#         st = time.time()
-#         after_draw = process_image(full_image, window_size)
-#         total_time += time.time() - st
-#         total_tries += 1
-#
-#     print("Average time for %f tries: %f" % (total_time/total_tries, total_tries))
