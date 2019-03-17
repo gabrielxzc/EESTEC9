@@ -8,17 +8,18 @@ prev_centroid_left = None
 prev_centroid_right = None
 
 
-def initialize_centroids(width,height):
-    global prev_centroid_left,prev_centroid_right
+def initialize_centroids(width, height):
+    global prev_centroid_left, prev_centroid_right
 
-    prev_centroid_left = [int(0.65*height),int(0.04*width)]
-    prev_centroid_right = [int(0.65*height),int(0.96*width)]
+    prev_centroid_left = [int(0.65 * height), int(0.04 * width)]
+    prev_centroid_right = [int(0.65 * height), int(0.96 * width)]
+
 
 def count_player_heart(h_bar):
     return np.count_nonzero(h_bar)
 
-def get_players_hearts(top_heart_bar):
 
+def get_players_hearts(top_heart_bar):
     bgr = [209, 205, 207]
     print(len(top_heart_bar))
     size_x = len(top_heart_bar[0])
@@ -42,21 +43,12 @@ def get_players_hearts(top_heart_bar):
     maskHSV_left = cv2.inRange(p1_healthbar, minHSV, maxHSV)
     maskHSV_right = cv2.inRange(p2_healthbar, minHSV, maxHSV)
 
-    cv2.imshow("health", maskHSV_right)
-    k = cv2.waitKey(0)
-
-    cv2.imshow("health", maskHSV_left)
-    k = cv2.waitKey(0)
-
-    cv2.imwrite("hbar.png",maskHSV_left)
-    cv2.imwrite("hbar2.png", maskHSV_right)
-    #
     p1_health = count_player_heart(maskHSV_left)
     p2_health = count_player_heart(maskHSV_right)
     print("P1 health: ", p1_health)
     print("P2 health: ", p2_health)
 
-    return p1_health,p2_health
+    return p1_health, p2_health
 
 
 def get_yellowed_image(frame):
@@ -83,12 +75,13 @@ def get_blued_image(frame):
 
     return maskHSV
 
+
 def draw_player(frame, players):
     for idx in (0, 1):
 
         size_y = len(frame)
 
-        x = int(players[idx][0]+ 0.25 * size_y)
+        x = int(players[idx][0] + 0.25 * size_y)
         y = int(players[idx][1])
 
         for _x in range(x - 20, x + 20):
@@ -98,6 +91,7 @@ def draw_player(frame, players):
                 frame[_x][_y][2] = 255
 
     return frame
+
 
 def check_teleport(actual):
     global previous
@@ -110,13 +104,14 @@ def check_teleport(actual):
 
 
 def check_player_down(centroid, width):
-    return centroid[0]/width > 0.58
+    return centroid[0] / width > 0.58
 
 
 def check_players_down(kcc, width):
     return check_player_down(kcc[0], width), check_player_down(kcc[1], width)
 
-def get_players_centroids(processed_image,initial_width,initial_height):
+
+def get_players_centroids(processed_image, initial_width, initial_height):
     merged_players_image = np.bitwise_or(get_blued_image(processed_image), get_yellowed_image(processed_image))
     # merged_players_image = cv2.fastNlMeansDenoising(merged_players_image,searchWindowSize=13, h=79)
 
@@ -127,13 +122,13 @@ def get_players_centroids(processed_image,initial_width,initial_height):
 
     teleported = check_teleport(len(xy_coo))
 
-
-    global prev_centroid_right,prev_centroid_left
+    global prev_centroid_right, prev_centroid_left
     if prev_centroid_right == None or prev_centroid_left:
-        initialize_centroids(initial_width,initial_height)
+        initialize_centroids(initial_width, initial_height)
 
     centroids_for_initalization = [] + prev_centroid_left + prev_centroid_right
-    k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=5,n_init=1,init=np.array(centroids_for_initalization).reshape(2,2)).fit(xy_coo)
+    k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=5, n_init=1,
+                        init=np.array(centroids_for_initalization).reshape(2, 2)).fit(xy_coo)
     kcc = k_means.cluster_centers_
     # print(kcc)
 
@@ -143,7 +138,7 @@ def get_players_centroids(processed_image,initial_width,initial_height):
 
     xy_coo_2 = [xy_coo[i] for i in range(len(xy_coo)) if
                 min(np.linalg.norm(xy_coo[i] - kcc[0]), np.linalg.norm(xy_coo[i] - kcc[1])) < 30]
-    k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=5,n_init=1,init=np.reshape(kcc,(2,2))).fit(xy_coo_2)
+    k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=5, n_init=1, init=np.reshape(kcc, (2, 2))).fit(xy_coo_2)
     kcc = k_means.cluster_centers_
 
     prev_centroid_left = kcc[0].tolist()
@@ -154,10 +149,10 @@ def get_players_centroids(processed_image,initial_width,initial_height):
     # cv2.imshow("merged", merged_players_image)
     # k = cv2.waitKey(0)
 
-    return (kcc,teleported)
+    return (kcc, teleported)
+
 
 def process_image(image):
-
     process_results = {}
 
     size_y = len(image)
@@ -182,8 +177,7 @@ def process_image(image):
     # print("P1 health: ", get_player_health(p1_healthbar))
     # print("P2 health: ", get_player_health(p2_healthbar))
 
-
-    p1_health,p2_health = get_players_hearts(health_bars)
+    # p1_health, p2_health = get_players_hearts(health_bars)
 
     particular_image = image[range(int(0.25 * size_y), int(0.8 * size_y)), :]
 
@@ -191,7 +185,7 @@ def process_image(image):
 
     # print(len(image))
     # print(len(image[0]))
-    kcc,teleported = get_players_centroids(processed_image,len(image),len(image[0]))
+    kcc, teleported = get_players_centroids(processed_image, len(image), len(image[0]))
 
     players = [(kcc[0][0], kcc[0][1]), (kcc[1][0], kcc[1][1])]
 
@@ -206,8 +200,8 @@ def process_image(image):
     process_results["right_pl_x"] = kcc[1][0]
     process_results["right_pl_y"] = kcc[1][0]
 
-    process_results["p1_health"] = count_player_heart(p1_health)
-    process_results["p2_health"] = count_player_heart(p2_health)
+    # process_results["p1_health"] = count_player_heart(p1_health)
+    # process_results["p2_health"] = count_player_heart(p2_health)
 
     return process_results
 

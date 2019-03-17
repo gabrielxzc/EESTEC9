@@ -1,0 +1,8 @@
+import combos.common as combo
+
+LEFT_PLAYER_X = 0
+LEFT_PLAYER_Y = 0
+RIGHT_PLAYER_X = 0
+RIGHT_PLAYER_Y = 0
+CURRENT_SIDE = combo.MOVE_RIGHT
+ENEMY_TELEPORTING = None
