@@ -1,6 +1,7 @@
 from time import sleep
 
 PLAYER_KEY = 'fjm30c2qa05t3e43'
+# PLAYER_KEY = 'thickunnqcrv6a23'
 
 MOVE_1 = MOVE_SQUARE = 'front_punch'
 MOVE_2 = MOVE_TRIANGLE = 'back_punch'
