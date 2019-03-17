@@ -30,8 +30,8 @@ while True:
     facing_side = strategies.player_facing_side.get_facing_side_by_ducking(sio)
 
     if facing_side is None:
-        print('Could not determine side I\'m facing, will go into safe move ...')
-        scorpion.backward_2(random.choice[combo.MOVE_LEFT, combo.MOVE_RIGHT], sio)
+        print('Could not determine side I\'m facing, will go into safe move and try to determine facing side again ...')
+        scorpion.forward_2(globals_vars.CURRENT_FACING_SIDE, sio)
     else:
         print('Detected I\'m on facing the ' + str(facing_side) + ' side!')
 

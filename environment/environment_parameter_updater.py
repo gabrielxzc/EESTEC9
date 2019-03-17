@@ -5,9 +5,8 @@ import time
 
 
 def update_environment_parameters(frame):
-    # start_time = time.time()
+    global frame_count
     info = analysis.process_image(frame)
-    # print('Analysis time: ' + str(time.time() - start_time))
 
     globals_vars.LEFT_PLAYER_X = info['left_pl_x']
     globals_vars.LEFT_PLAYER_Y = info['left_pl_y']
