@@ -1,5 +1,8 @@
 import threading
 import socketio
+from time import sleep
+import combos.common as combo
+import combos.scorpion.moves as scorpion
 from environment.environment_observer import environment_worker
 from environment.environment_parameter_updater import update_environment_parameters
 
@@ -17,5 +20,4 @@ while True:
     pass
     # facing_direction = combo.MOVE_LEFT
     # scorpion.combo_2(facing_direction, sio)
-
-    # sleep(10)
+    # sleep(5)

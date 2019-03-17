@@ -5,8 +5,10 @@ import sklearn.cluster as sk
 
 previous = None
 
+
 def get_player_health(player_healthbar):
     return np.count_nonzero(player_healthbar)
+
 
 def get_yellowed_image(frame):
     # BGR FOR YELLOW
@@ -26,15 +28,14 @@ def get_blued_image(frame):
     mask = cv2.inRange(frame, lower_blue, upper_blue)
     return mask
 
+
 def draw_player(frame, players):
     for idx in (0, 1):
 
         size_y = len(frame)
 
-        x = int(players[idx][0]+ 0.25 * size_y)
+        x = int(players[idx][0] + 0.25 * size_y)
         y = int(players[idx][1])
-
-
 
         for _x in range(x - 20, x + 20):
             for _y in range(y - 40, y + 40):
@@ -43,6 +44,7 @@ def draw_player(frame, players):
                 frame[_x][_y][2] = 255
 
     return frame
+
 
 def check_teleport(actual):
     global previous
@@ -53,10 +55,11 @@ def check_teleport(actual):
     previous = actual
     return rez
 
+
 # merged_players_image = cv2.bitwise_or(get_blued_image(processed_image), get_yellowed_image(processed_image))
 def get_players_centroids(processed_image):
     merged_players_image = np.bitwise_or(get_blued_image(processed_image), get_yellowed_image(processed_image))
-    merged_players_image = cv2.fastNlMeansDenoising(merged_players_image,searchWindowSize=13, h=79)
+    merged_players_image = cv2.fastNlMeansDenoising(merged_players_image, searchWindowSize=13, h=79)
 
     x = np.where(merged_players_image != 0)
     xy_coo = np.array([x[0], x[1]]).T
@@ -65,11 +68,10 @@ def get_players_centroids(processed_image):
 
     k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=2).fit(xy_coo)
     kcc = k_means.cluster_centers_
-    return (kcc,teleported)
+    return (kcc, teleported)
 
 
 def process_image(image):
-
     process_results = {}
 
     size_y = len(image)
@@ -89,7 +91,7 @@ def process_image(image):
 
     processed_image = cv2.cvtColor(particular_image, cv2.COLOR_BGR2HSV)
 
-    kcc,teleported = get_players_centroids(processed_image)
+    kcc, teleported = get_players_centroids(processed_image)
     # print(kcc)
     # print("Colors for left player:",full_image[int(kcc[0][0] + 0.25*size_y),int(kcc[0][1])])
     #
