@@ -54,3 +54,22 @@ def press_double_move(move_one, time_after_move_one_press, move_two, time_after_
 
     emit(move_two, False, sio)
     sleep(time_after_move_two_release)
+
+
+def press_double_move_boosted(move_one, time_after_move_one_press, move_two, time_after_move_two_press,
+                              time_after_move_one_release, time_after_move_two_release, sio):
+    emit(move_one, True, sio)
+    sleep(time_after_move_one_press)
+
+    emit(MOVE_R2_BLOCK, True, sio)
+    sleep(0.06)
+    emit(move_two, True, sio)
+    sleep(time_after_move_two_press)
+
+    emit(move_one, False, sio)
+    sleep(time_after_move_one_release)
+
+    emit(MOVE_R2_BLOCK, False, sio)
+    sleep(0.06)
+    emit(move_two, False, sio)
+    sleep(time_after_move_two_release)

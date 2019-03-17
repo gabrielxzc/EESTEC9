@@ -25,6 +25,7 @@ while True:
         break
 
 while True:
+    continue
     if globals_vars.ENEMY_TELEPORTING:
         combo.press_move(combo.MOVE_R2_BLOCK, 0.3, 0.1, sio)
         scorpion.combo_1(combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE), sio)
@@ -52,6 +53,7 @@ while True:
             print('MID RANGE')
             if np.random.random_sample() < distance / 100:
                 scorpion.teleport(globals_vars.CURRENT_FACING_SIDE, sio)
+                globals_vars.CURRENT_FACING_SIDE = combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE)
             else:
                 scorpion.takedown(globals_vars.CURRENT_FACING_SIDE, sio)
         else:

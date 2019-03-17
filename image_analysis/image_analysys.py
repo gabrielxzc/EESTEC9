@@ -133,7 +133,7 @@ def check_screen_for_spear(full_image):
     # k = cv2.waitKey(0)
 
     print("spear count:", np.count_nonzero(spear_denoisified))
-    globals_vars.ENEMY_SPEAR = np.count_nonzero(spear_denoisified) > 5000
+    globals_vars.ENEMY_SPEAR = np.count_nonzero(spear_denoisified) > 3000
 
 
     # spear = check_screen_for_spear(processed_image)
@@ -193,7 +193,7 @@ def process_image(image):
     hsv_tp_check = cv2.cvtColor(image_for_tp_check, cv2.COLOR_BGR2HSV)
     check_screen_for_teleport(hsv_tp_check)
 
-    check_screen_for_spear(image)
+    # check_screen_for_spear(image)
 
     process_results = {}
 
