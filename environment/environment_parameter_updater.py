@@ -3,8 +3,11 @@ import image_analysis.image_analysys as analysis
 import globals_vars
 import time
 
+frame_count = 0
+
 
 def update_environment_parameters(frame):
+    global frame_count
     info = analysis.process_image(frame)
 
     globals_vars.LEFT_PLAYER_X = info['left_pl_x']
@@ -12,6 +15,10 @@ def update_environment_parameters(frame):
     globals_vars.RIGHT_PLAYER_X = info['right_pl_x']
     globals_vars.RIGHT_PLAYER_Y = info['right_pl_y']
     globals_vars.LAST_FRAME = info['frame']
+
+    if frame_count % 4 == 0:
+        cv2.imwrite('sub-zero-ice-fram' + str(frame_count) + '.png', frame)
+    frame_count += 1
 
     cv2.imshow('client', info['frame'])
     cv2.waitKey(1)

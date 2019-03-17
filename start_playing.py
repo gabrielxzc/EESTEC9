@@ -8,6 +8,7 @@ import combos.common as combo
 import random
 from time import sleep
 import globals_vars
+import numpy as np
 
 IP = "0.0.0.0"
 PORT = 5005
@@ -43,13 +44,16 @@ while True:
             scorpion.takedown(facing_side, sio)
             globals_vars.NUMBER_OF_FRAMES_SINCE_LAST_FACING_SIDE_CHECK = 0
     else:
-        print(globals_vars.LEFT_PLAYER_X, globals_vars.RIGHT_PLAYER_X)
-        if abs(globals_vars.LEFT_PLAYER_X - globals_vars.RIGHT_PLAYER_X) <= 100:
+        distance = abs(globals_vars.LEFT_PLAYER_X - globals_vars.RIGHT_PLAYER_X)
+        if distance <= 100:
             print('CLOSE RANGE')
             scorpion.combo_1(globals_vars.CURRENT_FACING_SIDE, sio)
-        elif abs(globals_vars.LEFT_PLAYER_X - globals_vars.RIGHT_PLAYER_X) <= 250:
+        elif distance <= 200:
             print('MID RANGE')
-            scorpion.takedown(globals_vars.CURRENT_FACING_SIDE, sio)
+            if np.random.random_sample() < distance / 100:
+                scorpion.teleport(globals_vars.CURRENT_FACING_SIDE, sio)
+            else:
+                scorpion.takedown(globals_vars.CURRENT_FACING_SIDE, sio)
         else:
             print('LONG RANGE')
             scorpion.spear(globals_vars.CURRENT_FACING_SIDE, sio)
