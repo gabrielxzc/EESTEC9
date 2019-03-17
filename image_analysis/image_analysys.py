@@ -2,10 +2,13 @@ import time
 import cv2
 import numpy as np
 import sklearn.cluster as sk
+import random
 
 previous = None
 prev_centroid_left = None
 prev_centroid_right = None
+previous_hearth_player1 = None
+previous_hearth_player2 = None
 
 
 def initialize_centroids(width, height):
@@ -15,38 +18,18 @@ def initialize_centroids(width, height):
     prev_centroid_right = [int(0.65 * height), int(0.96 * width)]
 
 
-def count_player_heart(h_bar):
-    return np.count_nonzero(h_bar)
-
-
 def get_players_hearts(top_heart_bar):
-    bgr = [209, 205, 207]
-    print(len(top_heart_bar))
     size_x = len(top_heart_bar[0])
 
-    # top_heart_bar = np.add(top_heart_bar,)
+    processed_health_bar = cv2.cvtColor(top_heart_bar, cv2.COLOR_BGR2GRAY)
 
-    processed_health_bar = cv2.cvtColor(top_heart_bar, cv2.COLOR_BGR2HSV)
-    hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
-    #
-    #
+    ret, thresh1 = cv2.threshold(processed_health_bar, 50, 255, cv2.THRESH_BINARY)
 
-    p1_healthbar = processed_health_bar[:, range(0, int(size_x / 2))]
-    p2_healthbar = processed_health_bar[:, range(int(size_x / 2) + 6, size_x)]
+    p1_healthbar = thresh1[:, range(0, int(size_x / 2))]
+    p2_healthbar = thresh1[:, range(int(size_x / 2), size_x)]
 
-    # hsv = cv2.cvtColor(np.uint8([[bgr]]), cv2.COLOR_BGR2HSV)[0][0]
-    #
-    # # minHSV = np.array([hsv[0] - 10, hsv[1] - 60, hsv[2] - 220])
-    # # maxHSV = np.array([hsv[0] + 8, hsv[1] + 60, hsv[2] + 220])
-    minHSV = np.array([hsv[0] - 120, hsv[1] - 99, hsv[2] - 220])
-    maxHSV = np.array([hsv[0] + 150, hsv[1] + 160, hsv[2] + 220])
-    maskHSV_left = cv2.inRange(p1_healthbar, minHSV, maxHSV)
-    maskHSV_right = cv2.inRange(p2_healthbar, minHSV, maxHSV)
-
-    p1_health = count_player_heart(maskHSV_left)
-    p2_health = count_player_heart(maskHSV_right)
-    print("P1 health: ", p1_health)
-    print("P2 health: ", p2_health)
+    p1_health = np.count_nonzero(p1_healthbar)
+    p2_health = np.count_nonzero(p2_healthbar)
 
     return p1_health, p2_health
 
@@ -84,8 +67,8 @@ def draw_player(frame, players):
         x = int(players[idx][0] + 0.25 * size_y)
         y = int(players[idx][1])
 
-        for _x in range(x - 2, x + 2):
-            for _y in range(y - 2, y + 2):
+        for _x in range(x - 20, x + 20):
+            for _y in range(y - 40, y + 40):
                 frame[_x][_y][0] = 0
                 frame[_x][_y][1] = 0
                 frame[_x][_y][2] = 255
@@ -123,12 +106,20 @@ def get_players_centroids(processed_image, initial_width, initial_height):
     teleported = check_teleport(len(xy_coo))
 
     global prev_centroid_right, prev_centroid_left
-    if prev_centroid_right == None or prev_centroid_left:
+    if prev_centroid_right == None or prev_centroid_left == None:
         initialize_centroids(initial_width, initial_height)
 
     centroids_for_initalization = [] + prev_centroid_left + prev_centroid_right
-    k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=5, n_init=1,
-                        init=np.array(centroids_for_initalization).reshape(2, 2)).fit(xy_coo)
+
+    randomness = random.randint(0, 5)
+
+    k_means = ""
+    if randomness == 0:
+        k_means = sk.KMeans(n_clusters=2, random_state=1, max_iter=5, n_init=10).fit(xy_coo)
+    else:
+        k_means = sk.KMeans(n_clusters=2, random_state=0, max_iter=5, n_init=1,
+                            init=np.array(centroids_for_initalization).reshape(2, 2)).fit(xy_coo)
+
     kcc = k_means.cluster_centers_
     # print(kcc)
 
@@ -159,32 +150,27 @@ def process_image(image):
     size_x = len(image[0])
 
     health_bars = image[range(int(0.18 * size_y), int(0.20 * size_y)), :]
-    # processed_health_bar = cv2.cvtColor(health_bar, cv2.COLOR_BGR2GRAY)
-    # #
-    # #
-    # p1_healthbar = processed_health_bar[:, range(0, int(size_x / 2) - 6)]
-    # p2_healthbar = processed_health_bar[:, range(int(size_x / 2) + 6, size_x)]
 
-    # cv2.imshow("health", p2_healthbar)
-    # k = cv2.waitKey(0)
-    #
-    # cv2.imshow("health", p1_healthbar)
-    # k = cv2.waitKey(0)
+    p1_health, p2_health = get_players_hearts(health_bars)
+    global previous_hearth_player1, previous_hearth_player2
 
-    # cv2.imwrite("hbar.png",p1_healthbar)
-    # cv2.imwrite("hbar2.png", p1_healthbar)
-    # #
-    # print("P1 health: ", get_player_health(p1_healthbar))
-    # print("P2 health: ", get_player_health(p2_healthbar))
+    if previous_hearth_player1 == None or previous_hearth_player2 == None:
+        previous_hearth_player1 = p1_health
+        previous_hearth_player2 = p2_health
 
-    # p1_health, p2_health = get_players_hearts(health_bars)
+    if p1_health < 0.95 * previous_hearth_player1:
+        process_results["p1_is_hit"] = True
+
+    if p2_health < 0.95 * previous_hearth_player2:
+        process_results["p2_is_hit"] = True
+
+    previous_hearth_player1 = p1_health
+    previous_hearth_player2 = p2_health
 
     particular_image = image[range(int(0.25 * size_y), int(0.8 * size_y)), :]
 
     processed_image = cv2.cvtColor(particular_image, cv2.COLOR_BGR2HSV)
 
-    # print(len(image))
-    # print(len(image[0]))
     kcc, teleported = get_players_centroids(processed_image, len(image), len(image[0]))
 
     players = [(kcc[0][0], kcc[0][1]), (kcc[1][0], kcc[1][1])]
@@ -200,19 +186,21 @@ def process_image(image):
     process_results["right_pl_x"] = kcc[1][0]
     process_results["right_pl_y"] = kcc[1][0]
 
-    # process_results["p1_health"] = count_player_heart(p1_health)
-    # process_results["p2_health"] = count_player_heart(p2_health)
+    process_results["p1_health"] = p1_health
+    process_results["p2_health"] = p2_health
 
     return process_results
 
+
 # full_image = cv2.imread('frame-scorpion-down.png')
-# full_image = cv2.imread('/Users/alexmititelu/Documents/Work/HackathonEESTEC_REPO/EESTEC9/frames/frame-lower-hp-players.png')
+# full_image = cv2.imread(
+#     '/Users/alexmititelu/Documents/Work/HackathonEESTEC_REPO/EESTEC9/frames/frame-lower-hp-players.png')
 # full_image = cv2.imread('frame1.png')
 # full_image = cv2.imread('frame0.png')
 #
-# # test_image = full_image[:,:]
-# # cv2.imshow("final", test_image)
-# # k = cv2.waitKey(0)
+# test_image = full_image[:,:]
+# cv2.imshow("final", test_image)
+# k = cv2.waitKey(0)
 #
 #
 # #
