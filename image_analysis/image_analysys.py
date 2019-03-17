@@ -75,15 +75,15 @@ def draw_player(frame, players):
 
     return frame
 
-
-def check_teleport(actual):
-    global previous
-    if previous is None:
-        previous = actual
-        return False
-    rez = abs(actual - previous) > 20
-    previous = actual
-    return rez
+#
+# def check_teleport(actual):
+#     global previous
+#     if previous is None:
+#         previous = actual
+#         return False
+#     rez = abs(actual - previous) > 20
+#     previous = actual
+#     return rez
 
 
 def check_player_down(centroid, width):
@@ -127,8 +127,6 @@ def get_players_centroids(processed_image, initial_width, initial_height):
     x = np.where(merged_players_image != 0)
     xy_coo = np.array([x[0], x[1]]).T
 
-    teleported = check_teleport(len(xy_coo))
-
     global prev_centroid_right, prev_centroid_left
     if prev_centroid_right == None or prev_centroid_left == None:
         initialize_centroids(initial_width, initial_height)
@@ -164,7 +162,7 @@ def get_players_centroids(processed_image, initial_width, initial_height):
     # cv2.imshow("merged", merged_players_image)
     # k = cv2.waitKey(0)
 
-    return (kcc, teleported)
+    return
 
 
 def process_image(image):
@@ -197,14 +195,14 @@ def process_image(image):
 
     spear = check_screen_for_spear(processed_image)
 
-    kcc, teleported = get_players_centroids(processed_image, len(image), len(image[0]))
+    kcc = get_players_centroids(processed_image, len(image), len(image[0]))
 
     players = [(kcc[0][0] + 0.25 * size_y, kcc[0][1]), (kcc[1][0] + 0.25 * size_y, kcc[1][1])]
 
     after_draw = draw_player(image, players)
 
     process_results["frame"] = after_draw
-    process_results["enemy_teleported"] = teleported
+    process_results["enemy_teleported"] = check_screen_for_teleport(image)
 
     if kcc[0][1] < kcc[1][1]:
         left_x, left_y = kcc[0][1], kcc[0][0]
