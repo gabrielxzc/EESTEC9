@@ -3,6 +3,8 @@ import cv2
 import struct
 import pickle
 import socket
+import traceback
+import sys
 
 data = ''
 payload_size = struct.calcsize(">L")
@@ -93,5 +95,6 @@ def environment_worker(ip, port, callback):
 
         except Exception as e:
             print('error', e)
+            traceback.print_exc(file = sys.stdout)
             init_frame_fragments()
             data = ''

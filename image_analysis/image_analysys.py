@@ -84,8 +84,8 @@ def draw_player(frame, players):
         x = int(players[idx][0] + 0.25 * size_y)
         y = int(players[idx][1])
 
-        for _x in range(x - 20, x + 20):
-            for _y in range(y - 40, y + 40):
+        for _x in range(x - 2, x + 2):
+            for _y in range(y - 2, y + 2):
                 frame[_x][_y][0] = 0
                 frame[_x][_y][1] = 0
                 frame[_x][_y][2] = 255
