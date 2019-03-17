@@ -135,13 +135,19 @@ def check_screen_for_spear(full_image):
     print("spear count:", np.count_nonzero(spear_denoisified))
     globals_vars.ENEMY_SPEAR = np.count_nonzero(spear_denoisified) > 3000
 
-
     # spear = check_screen_for_spear(processed_image)
 
 
 def get_players_centroids(processed_image, initial_width, initial_height):
-    merged_players_image = np.bitwise_or(get_blued_image(processed_image), get_yellowed_image(processed_image))
+    blue_mask = get_blued_image(processed_image)
+    yellow_mask = get_yellowed_image(processed_image)
+    merged_players_image = np.bitwise_or(blue_mask, yellow_mask)
     # merged_players_image = cv2.fastNlMeansDenoising(merged_players_image,searchWindowSize=13, h=79)
+    if globals_vars.OPPONENT is None and previous_hearth_player1 in range(65, 85):
+        if np.count_nonzero(yellow_mask) > 40:
+            globals_vars.OPPONENT = "SUBZERO"
+        else:
+            globals_vars.OPPONENT = "SCORPION"
 
     # cv2.imshow("merged", merged_players_image)
     # k = cv2.waitKey(0)
@@ -149,7 +155,7 @@ def get_players_centroids(processed_image, initial_width, initial_height):
     xy_coo = np.array([x[0], x[1]]).T
 
     global prev_centroid_right, prev_centroid_left
-    if prev_centroid_right == None or prev_centroid_left == None:
+    if prev_centroid_right is None or prev_centroid_left is None:
         initialize_centroids(initial_width, initial_height)
 
     centroids_for_initalization = [] + prev_centroid_left + prev_centroid_right
@@ -202,7 +208,7 @@ def process_image(image):
     p1_health, p2_health = get_players_hearts(health_bars)
     global previous_hearth_player1, previous_hearth_player2
 
-    if previous_hearth_player1 == None or previous_hearth_player2 == None:
+    if previous_hearth_player1 is None or previous_hearth_player2 is None:
         previous_hearth_player1 = p1_health
         previous_hearth_player2 = p2_health
 
@@ -246,7 +252,7 @@ def process_image(image):
 
     return process_results
 
-# full_image = cv2.imread('frame-scorpion-down.png')
+# full_image = cv2.imread('E:/Work/EESTEC9/EESTEC9/frames/frame-scorpion-spear.png')
 # full_image = cv2.imread(
 #     '/Users/alexmititelu/Documents/Work/HackathonEESTEC_REPO/EESTEC9/frames/teleport-frame4.png')
 # full_image = cv2.imread('frame1.png')
@@ -264,5 +270,6 @@ def process_image(image):
 # start = time.time()
 # process_result = process_image(full_image)
 # print(time.time() - start)
+# print(globals_vars.OPPONENT)
 # cv2.imshow("final", process_result["frame"])
 # k = cv2.waitKey(0)

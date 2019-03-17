@@ -25,7 +25,11 @@ while True:
         break
 
 while True:
-    continue
+    if globals_vars.OPPONENT is not None:
+        break
+
+print(globals_vars.OPPONENT)
+while True:
     if globals_vars.ENEMY_TELEPORTING:
         combo.press_move(combo.MOVE_R2_BLOCK, 0.3, 0.1, sio)
         scorpion.combo_1(combo.get_opposite_direction(globals_vars.CURRENT_FACING_SIDE), sio)
