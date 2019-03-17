@@ -11,7 +11,7 @@ MOVE_DOWN = 'down'
 MOVE_LEFT = 'left'
 MOVE_RIGHT = 'right'
 MOVE_L1_THROW = 'throw'
-MOVE_R2_BOCK = 'block'
+MOVE_R2_BLOCK = 'block'
 MOVE_R1_INTERACTION = 'interact'
 
 

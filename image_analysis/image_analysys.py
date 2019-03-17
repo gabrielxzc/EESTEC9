@@ -64,11 +64,11 @@ def draw_player(frame, players):
 
         size_y = len(frame)
 
-        x = int(players[idx][0] + 0.25 * size_y)
+        x = int(players[idx][0])
         y = int(players[idx][1])
 
-        for _x in range(x - 20, x + 20):
-            for _y in range(y - 40, y + 40):
+        for _x in range(x - 2, x + 2):
+            for _y in range(y - 2, y + 2):
                 frame[_x][_y][0] = 0
                 frame[_x][_y][1] = 0
                 frame[_x][_y][2] = 255
@@ -173,24 +173,30 @@ def process_image(image):
 
     kcc, teleported = get_players_centroids(processed_image, len(image), len(image[0]))
 
-    players = [(kcc[0][0], kcc[0][1]), (kcc[1][0], kcc[1][1])]
+    players = [(kcc[0][0] + 0.25 * size_y, kcc[0][1]), (kcc[1][0] + 0.25 * size_y, kcc[1][1])]
 
     after_draw = draw_player(image, players)
 
     process_results["frame"] = after_draw
     process_results["enemy_teleported"] = teleported
 
-    process_results["left_pl_x"] = kcc[0][0]
-    process_results["left_pl_y"] = kcc[0][1]
+    if kcc[0][1] < kcc[1][1]:
+        left_x, left_y = kcc[0][1], kcc[0][0]
+        right_x, right_y = kcc[1][1], kcc[1][0]
+    else:
+        left_x, left_y = kcc[1][1], kcc[1][0]
+        right_x, right_y = kcc[0][1], kcc[0][0]
 
-    process_results["right_pl_x"] = kcc[1][0]
-    process_results["right_pl_y"] = kcc[1][0]
+    process_results["left_pl_x"] = left_x
+    process_results["left_pl_y"] = left_y
+
+    process_results["right_pl_x"] = right_x
+    process_results["right_pl_y"] = right_y
 
     process_results["p1_health"] = p1_health
     process_results["p2_health"] = p2_health
 
     return process_results
-
 
 # full_image = cv2.imread('frame-scorpion-down.png')
 # full_image = cv2.imread(
